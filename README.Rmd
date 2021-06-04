@@ -1,0 +1,618 @@
+---
+title: "Demographic Trait Overview"
+author: "Matt Robertson"
+date: "07/05/2021"
+output: 
+ html_document:
+  toc: true
+  toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+
+setwd("Data")
+
+abun<-read.csv(file="abundance.csv", header = TRUE)
+bio<-read.csv(file="biomass.csv", header = TRUE)
+len<-read.csv(file="l_at_mat.csv", header = TRUE)
+```
+
+We are currently collecting data on abundance, biomass, and length at maturity for fish stocks around Newfoundland and Labrador. Based on our data inputs it should be possible to separate each time-series into stocks, species, divisions, and functional groups. The end goal will be to assess these time-series using dynamic factor analysis (DFA) and compare the trends to environmental trends to identify if there are similarities in how these stocks demographies have shifted over time and whether shared changes can be related to environmental variables.
+
+# Abundance Data
+
+```{r, echo=FALSE}
+
+years<-abun[,1]
+
+stocks<-colnames(abun[,2:8])
+spp<-unlist(lapply(strsplit(stocks, "_"),`[[`, 1))
+divs<-unlist(sapply(strsplit(stocks, "_"),tail, 1))
+
+spp<-gsub("YellowtailFlounder","Yellowtailflounder",spp)
+
+unique_spp<-unique(spp)
+uni_fxnal_group<-c("benthivore","benthivore")
+fxnal_group<-gsub(unique_spp[1],uni_fxnal_group[1],gsub(unique_spp[2],uni_fxnal_group[2],spp))
+
+scaled_abun<-apply(abun[,2:8], 2, scale)
+
+abun_df<-data.frame(abun=c(scaled_abun),year=rep(years, length(scaled_abun[1,])), stock=rep(stocks, each=length(years)), 
+                          spp=rep(spp, each=length(years)), fxnal_group= rep(fxnal_group, each=length(years)),
+                          div=rep(divs, each=length(years)))
+
+```
+
+## Species Overview {.tabset .tabset-fade .tabset-pills}
+
+### Thorny skate
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=8}
+th_sk<-subset(abun_df, spp=="Thornyskate")
+ggplot(th_sk, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Thornyskate")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Thornyskate")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Yellowtail flounder
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+yt_fl<-subset(abun_df, spp=="Yellowtailflounder")
+ggplot(yt_fl, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Yellowtailflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Yellowtailflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+## NAFO Division {.tabset .tabset-fade .tabset-pills}
+
+### 2J3K
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`2J3K`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="2J3K")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="2J3K")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3LNO
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`3LNO`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3LNO")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3LNO")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3Ps
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`3Ps`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3Ps")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3Ps")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 4RST
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`4RST`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="4RST")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="4RST")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Abundance")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+# Biomass Data
+
+```{r, echo=FALSE}
+
+years<-bio[,1]
+
+stocks<-colnames(bio[,2:8])
+spp<-unlist(lapply(strsplit(stocks, "_"),`[[`, 1))
+divs<-unlist(sapply(strsplit(stocks, "_"),tail, 1))
+
+spp<-gsub("YellowtailFlounder","Yellowtailflounder",spp)
+
+unique_spp<-unique(spp)
+uni_fxnal_group<-c("benthivore","benthivore")
+fxnal_group<-gsub(unique_spp[1],uni_fxnal_group[1],gsub(unique_spp[2],uni_fxnal_group[2],spp))
+
+scaled_abun<-apply(bio[,2:8], 2, scale)
+
+abun_df<-data.frame(abun=c(scaled_abun),year=rep(years, length(scaled_abun[1,])), stock=rep(stocks, each=length(years)), 
+                          spp=rep(spp, each=length(years)), fxnal_group= rep(fxnal_group, each=length(years)),
+                          div=rep(divs, each=length(years)))
+
+```
+
+## Species Overview {.tabset .tabset-fade .tabset-pills}
+
+### Thorny skate
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=8}
+th_sk<-subset(abun_df, spp=="Thornyskate")
+ggplot(th_sk, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Thornyskate")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Thornyskate")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Yellowtail flounder
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+yt_fl<-subset(abun_df, spp=="Yellowtailflounder")
+ggplot(yt_fl, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Yellowtailflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Yellowtailflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+## NAFO Division {.tabset .tabset-fade .tabset-pills}
+
+### 2J3K
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`2J3K`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="2J3K")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="2J3K")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3LNO
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`3LNO`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3LNO")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3LNO")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3Ps
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`3Ps`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3Ps")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3Ps")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 4RST
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+ggplot(xs$`4RST`,aes(x =year, y=abun,group = stock)) + 
+  geom_line(colour="grey")+
+  geom_point(colour="grey")+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~spp)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+#### Aggregated Mean
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=mean, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="4RST")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="4RST")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled Biomass")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
