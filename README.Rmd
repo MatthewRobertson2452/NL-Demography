@@ -20,6 +20,346 @@ len<-read.csv(file="l_at_mat.csv", header = TRUE)
 
 We are currently collecting data on abundance, biomass, and length at maturity for fish stocks around Newfoundland and Labrador. Based on our data inputs it should be possible to separate each time-series into stocks, species, divisions, and functional groups. The end goal will be to assess these time-series using dynamic factor analysis (DFA) and compare the trends to environmental trends to identify if there are similarities in how these stocks demographies have shifted over time and whether shared changes can be related to environmental variables.
 
+# Length at maturity Data
+
+```{r, echo=FALSE}
+
+years<-len[,1]
+
+stocks<-colnames(len[,2:16])
+spp<-unlist(lapply(strsplit(stocks, "_"),`[[`, 1))
+divs<-unlist(sapply(strsplit(stocks, "_"),tail, 1))
+
+unique_spp<-unique(spp)
+uni_fxnal_group<-c("planktivore","benthivore","benthivore","benthivore","planktivore","benthivore")
+fxnal_group<-gsub(unique_spp[1],uni_fxnal_group[1],gsub(unique_spp[2],uni_fxnal_group[2],
+                                                        gsub(unique_spp[3],uni_fxnal_group[3],
+                                                             gsub(unique_spp[4],uni_fxnal_group[4],
+                                                                  gsub(unique_spp[5],uni_fxnal_group[5],
+                                                                       gsub(unique_spp[6],uni_fxnal_group[6],spp))))))
+
+scaled_abun<-apply(len[,2:16], 2, scale)
+
+abun_df<-data.frame(abun=c(scaled_abun),year=rep(years, length(scaled_abun[1,])), stock=rep(stocks, each=length(years)), 
+                          spp=rep(spp, each=length(years)), fxnal_group= rep(fxnal_group, each=length(years)),
+                          div=rep(divs, each=length(years)))
+
+```
+
+
+## NAFO Division {.tabset .tabset-fade .tabset-pills}
+
+### All
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year), FUN=median, na.rm=TRUE)
+
+ggplot()+
+  geom_line(data=abun_df,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=abun_df,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=agg_spp, aes(x=Group.1, y=x))+
+  geom_point(data=agg_spp, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 2J3K
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$div)
+
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="2J3K")
+
+ggplot()+
+  geom_line(data=xs$`2J3K`,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$`2J3K`,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3LNO
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3LNO")
+
+ggplot()+
+  geom_line(data=xs$`3LNO`,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$`3LNO`,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 3Ps
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="3Ps")
+
+ggplot()+
+  geom_line(data=xs$`3Ps`,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$`3Ps`,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### 4RST
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$div), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="4R")
+
+ggplot()+
+  geom_line(data=xs$`4R`,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$`4R`,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+## Functional Group {.tabset .tabset-fade .tabset-pills}
+
+### Benthivore
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+xs <- split(abun_df,f = abun_df$fxnal_group)
+
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$fxnal_group), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="benthivore")
+
+ggplot()+
+  geom_line(data=xs$benthivore,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$benthivore,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+### Planktivore
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$fxnal_group), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="planktivore")
+
+ggplot()+
+  geom_line(data=xs$planktivore,aes(x =year, y=abun, group = stock), colour="grey")+
+  geom_point(data=xs$planktivore,aes(x =year, y=abun, group = stock),colour="grey")+
+  geom_line(data=th_sk, aes(x=Group.1, y=x))+
+  geom_point(data=th_sk, aes(x=Group.1, y=x))+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+## Species Overview {.tabset .tabset-fade .tabset-pills}
+
+### American plaice
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+yt_fl<-subset(abun_df, spp=="Americanplaice")
+ggplot(yt_fl, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Americanplaice")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Atlantic Mackerel
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+yt_fl<-subset(abun_df, spp=="AtlanticMakerel")
+ggplot(yt_fl, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="AtlanticMakerel")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Herring
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=8}
+th_sk<-subset(abun_df, spp=="Herring")
+ggplot(th_sk, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Herring")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Roughhead Grenadier
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=8}
+th_sk<-subset(abun_df, spp=="Roughheadgrenadier")
+ggplot(th_sk, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Roughheadgrenadier")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Witch flounder
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=8}
+th_sk<-subset(abun_df, spp=="Witchflounder")
+ggplot(th_sk, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Witchflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Yellowtail flounder
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+yt_fl<-subset(abun_df, spp=="Yellowtailflounder")
+ggplot(yt_fl, aes(x=year, y=abun))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  facet_wrap(~stock)+
+    theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+#### Aggregated Median
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
+th_sk<-subset(agg_spp, Group.2=="Yellowtailflounder")
+ggplot(th_sk, aes(x=Group.1, y=x))+
+  geom_line()+
+  geom_point()+
+  xlab("Year")+ylab("Scaled length at maturity")+
+  #facet_wrap(~Group.2)+
+  theme_bw()+
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=45, hjust=1))
+```
+
+
+
 # Abundance Data
 
 ```{r, echo=FALSE}
