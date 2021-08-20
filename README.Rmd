@@ -24,22 +24,33 @@ We are currently collecting data on abundance, biomass, and length at maturity f
 
 ```{r, echo=FALSE}
 
+#cut out the column for years
 years<-len[,1]
 
-stocks<-colnames(len[,2:16])
+#pull out the names of the stocks (just column names)
+stocks<-colnames(len[,2:length(len)])
+#separate species names (only works if people input stock names following definition in metadata)
 spp<-unlist(lapply(strsplit(stocks, "_"),`[[`, 1))
+#separate divisions (only works if people input stock names following definition in metadata)
 divs<-unlist(sapply(strsplit(stocks, "_"),tail, 1))
 
+#identify the unique species
 unique_spp<-unique(spp)
-uni_fxnal_group<-c("planktivore","benthivore","benthivore","benthivore","planktivore","benthivore")
-fxnal_group<-gsub(unique_spp[1],uni_fxnal_group[1],gsub(unique_spp[2],uni_fxnal_group[2],
-                                                        gsub(unique_spp[3],uni_fxnal_group[3],
-                                                             gsub(unique_spp[4],uni_fxnal_group[4],
-                                                                  gsub(unique_spp[5],uni_fxnal_group[5],
-                                                                       gsub(unique_spp[6],uni_fxnal_group[6],spp))))))
+#these need to be input manually, I have been basing the functional group on definitions in the SI of Dempsey et al. (2017)
+# https://doi.org/10.1016/j.ecolind.2016.12.011
+uni_fxnal_group<-c("planktivore","benthivore","benthivore","benthivore","planktivore","benthivore") 
+#this replaces the name of each species with the name of its functional group
+fxnal_group<-gsub(unique_spp[1],uni_fxnal_group[1],
+                  gsub(unique_spp[2],uni_fxnal_group[2],
+                      gsub(unique_spp[3],uni_fxnal_group[3],
+                          gsub(unique_spp[4],uni_fxnal_group[4],
+                             gsub(unique_spp[5],uni_fxnal_group[5],
+                                  gsub(unique_spp[6],uni_fxnal_group[6],spp))))))
 
-scaled_abun<-apply(len[,2:16], 2, scale)
+#scale each of the lengths at maturity
+scaled_abun<-apply(len[,2:length(len)], 2, scale)
 
+#combine all of the different tpyes of data into one dataframe
 abun_df<-data.frame(abun=c(scaled_abun),year=rep(years, length(scaled_abun[1,])), stock=rep(stocks, each=length(years)), 
                           spp=rep(spp, each=length(years)), fxnal_group= rep(fxnal_group, each=length(years)),
                           div=rep(divs, each=length(years)))
