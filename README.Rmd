@@ -199,7 +199,7 @@ ggplot()+
 ### American plaice
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
-yt_fl<-subset(abun_df, spp=="Americanplaice")
+yt_fl<-subset(abun_df, spp=="Americanplaice") #change the name here
 ggplot(yt_fl, aes(x=year, y=abun))+
   geom_line()+
   geom_point()+
@@ -213,7 +213,7 @@ ggplot(yt_fl, aes(x=year, y=abun))+
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
 agg_spp<-aggregate(abun_df$abun, by=list(abun_df$year, abun_df$spp), FUN=median, na.rm=TRUE)
-th_sk<-subset(agg_spp, Group.2=="Americanplaice")
+th_sk<-subset(agg_spp, Group.2=="Americanplaice") #change the name here
 ggplot(th_sk, aes(x=Group.1, y=x))+
   geom_line()+
   geom_point()+
